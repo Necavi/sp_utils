@@ -2,7 +2,6 @@ from filters.players import PlayerIter, PlayerGenerator
 from players.helpers import index_from_userid, index_from_playerinfo, playerinfo_from_index
 
 from core import SOURCE_ENGINE_BRANCH
-from string import Template
 from messages import SayText2
 from messages import TextMsg
 from commands import CommandReturn
