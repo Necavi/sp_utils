@@ -161,6 +161,10 @@ class Command(object):
         say_command_manager.unregister_commands(self.saynames, self.say_command_callback)
 
 
+def is_source_2009():
+    return SOURCE_ENGINE_BRANCH in ("css", "dods", "hl2dm", "tf2")
+
+
 def unload():
     for command in command_list:
         command.unload()
