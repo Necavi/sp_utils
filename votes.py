@@ -5,7 +5,9 @@ from filters.players import PlayerIter
 
 class SimpleVote(PagedRadioMenu):
     def __init__(self, vote_callback=None, **kwargs):
-        super().__init__(select_callback=SimpleVote.select, **kwargs)
+        self._select_callback = kwargs["select_callback"] if "select_callback" in kwargs else None
+        kwargs["select_callback"] = SimpleVote.select
+        super().__init__(**kwargs)
         if vote_callback is not None:
             self.vote_callback = vote_callback
         self.votes = defaultdict(int)
