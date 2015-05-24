@@ -1,7 +1,6 @@
 from filters.players import PlayerIter, PlayerGenerator
 from players.helpers import index_from_userid, index_from_playerinfo, playerinfo_from_index
 
-from core import SOURCE_ENGINE_BRANCH
 from messages import SayText2
 from messages import TextMsg
 from commands import CommandReturn
@@ -72,10 +71,16 @@ def message_server(message):
 def message_client(index, message):
     SayText2(message=colourize(message)).send(index)
 
+def message_all_clients(message):
+    for index in PlayerIter("human"):
+        message_client(index, message)
 
 def message_console(index, message):
     TextMsg(message=strip_colours(message), destination=2).send(index)
 
+def message_all_consoles(message):
+    for index in PlayerIter("human"):
+        message_console(index, message)
 
 class CommandSourceProxy(object):
     def __init__(self, source,  index=None):
@@ -158,11 +163,6 @@ class Command(object):
         client_command_manager.unregister_commands(self.names, self.client_command_callback)
         server_command_manager.unregister_commands(self.names, self.server_command_callback)
         say_command_manager.unregister_commands(self.saynames, self.say_command_callback)
-
-
-def is_source_2009():
-    return SOURCE_ENGINE_BRANCH in ("css", "dods", "hl2dm", "tf2")
-
 
 def unload():
     for command in command_list:

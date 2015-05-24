@@ -1,10 +1,9 @@
 import re
 
+from core import SOURCE_ENGINE_BRANCH
 from colors import Color
 
-from .utils import is_source_2009
-
-if is_source_2009():
+if SOURCE_ENGINE_BRANCH in ("css", "dods", "hl2dm", "tf2"):
     colours = {
         "aliceblue": Color(240, 248, 255),
         "allies": Color(77, 121, 66),
