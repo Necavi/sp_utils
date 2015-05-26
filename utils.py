@@ -129,10 +129,10 @@ class Command(object):
         self.saynames = []
         if not isinstance(names, str) and isinstance(names, collections.Iterable):
             for name in self.names:
-                self.saynames.append("!" + name)
+                self.saynames.append("." + name)
                 self.saynames.append("/" + name)
         else:
-            self.saynames.append("!" + self.names)
+            self.saynames.append("." + self.names)
             self.saynames.append("/" + self.names)
         self.args = args
         self.kwargs = kwargs
