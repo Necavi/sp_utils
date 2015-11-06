@@ -19,7 +19,7 @@ def target_filter(filterby, source=None, multitarget=True):
     Args:
         filterby: A string filterby in the form of
                 Name: "<playername>" ex: "necavi"
-                Userid: "#<userid>" ex: "#5"
+                Userid: "#<index>" ex: "#5"
                 Multi-Filter: "@<filterby>" ex "@me"
         source: A player to consider the source, used for filters such as @me
     Returns:
@@ -49,10 +49,10 @@ def target_filter(filterby, source=None, multitarget=True):
                 except FilterError:
                     pass
     elif filterby[0] == "#":
-        userid = filterby[1:]
-        if userid.isnumeric():
+        index = filterby[1:]
+        if index.isnumeric():
             try:
-                playerlist.append(index_from_userid(int(userid)))
+                playerlist.append(index_from_userid(int(index)))
             except ValueError:
                 pass
     else:
