@@ -1,4 +1,4 @@
-from filters.players import PlayerIter, PlayerGenerator
+from filters.players import PlayerIter
 from players.helpers import index_from_userid, index_from_playerinfo, playerinfo_from_index
 
 from messages import SayText2
@@ -8,10 +8,15 @@ from commands.client.manager import client_command_manager
 from commands.server.manager import server_command_manager
 from commands.say.manager import say_command_manager
 from filters.errors import FilterError
+from engines.server import engine_server
 
 from .colourizer import colourize, strip_colours
 
 import collections
+
+
+def change_map(level):
+    engine_server.change_level(level, None)
 
 
 def target_filter(filterby, source=None, multitarget=True):
@@ -24,6 +29,9 @@ def target_filter(filterby, source=None, multitarget=True):
         source: A player to consider the source, used for filters such as @me
     Returns:
         A list of players that fit the filterby string
+        :param source:
+        :param filterby:
+        :param multitarget:
     """
     playerlist = []
     if filterby == "":
@@ -37,7 +45,7 @@ def target_filter(filterby, source=None, multitarget=True):
                         playerlist.append(index)
             else:
                 try:
-                    playerlist = [x for x in PlayerIter(not_filters=filterby[2:], return_types="index")]
+                    playerlist = [x for x in PlayerIter(not_filters=filterby[2:])]
                 except FilterError:
                     pass
         else:
@@ -45,7 +53,7 @@ def target_filter(filterby, source=None, multitarget=True):
                 playerlist.append(source)
             else:
                 try:
-                    playerlist = [x for x in PlayerIter(is_filters=filterby[1:], return_types="index")]
+                    playerlist = [x for x in PlayerIter(is_filters=filterby[1:])]
                 except FilterError:
                     pass
     elif filterby[0] == "#":
@@ -71,16 +79,20 @@ def message_server(message):
 def message_client(index, message):
     SayText2(message=colourize(message)).send(index)
 
+
 def message_all_clients(message):
     for index in PlayerIter("human"):
         message_client(index, message)
 
+
 def message_console(index, message):
     TextMsg(message=strip_colours(message), destination=2).send(index)
+
 
 def message_all_consoles(message):
     for index in PlayerIter("human"):
         message_console(index, message)
+
 
 class CommandSourceProxy(object):
     def __init__(self, source,  index=None):
@@ -139,30 +151,30 @@ class Command(object):
 
         command_list.append(self)
 
-    def client_command_callback(self, player, command):
-        return self.callback(CommandSourceProxy("console", index_from_playerinfo(player)), command)
-
-    def server_command_callback(self, command):
-        return self.callback(CommandSourceProxy("server"), command)
-
-    def say_command_callback(self, player, teamonly, command):
-        command = SayCommandProxy(command)
-        silent = True if command.args[0].startswith("/") else False
-        command.args[0] = command.args[0][1:]
-        self.callback(CommandSourceProxy("say", index_from_playerinfo(player)), command)
-        return CommandReturn.BLOCK if silent else CommandReturn.CONTINUE
+    def command_callback(self, command, player=None, teamonly=None):
+        if teamonly is not None:
+            command = SayCommandProxy(command)
+            silent = True if command.args[0].startswith("/") else False
+            command.args[0] = command.args[0][1:]
+            self.callback(CommandSourceProxy("say", index_from_playerinfo(player)), command)
+            return CommandReturn.BLOCK if silent else CommandReturn.CONTINUE
+        elif player is not None:
+            return self.callback(CommandSourceProxy("console", index_from_playerinfo(player)), command)
+        else:
+            return self.callback(CommandSourceProxy("server"), command)
 
     def __call__(self, callback):
         self.callback = callback
-        client_command_manager.register_commands(self.names, self.client_command_callback, *self.args, **self.kwargs)
-        server_command_manager.register_commands(self.names, self.server_command_callback, *self.args, **self.kwargs)
-        say_command_manager.register_commands(self.saynames, self.say_command_callback, *self.args, **self.kwargs)
+        client_command_manager.register_commands(self.names, self.command_callback, *self.args, **self.kwargs)
+        server_command_manager.register_commands(self.names, self.command_callback, *self.args, **self.kwargs)
+        say_command_manager.register_commands(self.saynames, self.command_callback, *self.args, **self.kwargs)
         return self
 
     def unload(self):
-        client_command_manager.unregister_commands(self.names, self.client_command_callback)
-        server_command_manager.unregister_commands(self.names, self.server_command_callback)
-        say_command_manager.unregister_commands(self.saynames, self.say_command_callback)
+        client_command_manager.unregister_commands(self.names, self.command_callback)
+        server_command_manager.unregister_commands(self.names, self.command_callback)
+        say_command_manager.unregister_commands(self.saynames, self.command_callback)
+
 
 def unload():
     for command in command_list:

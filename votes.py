@@ -6,6 +6,7 @@ from collections import defaultdict
 from menus.radio import PagedRadioMenu, SimpleRadioMenu, SimpleRadioOption
 from filters.players import PlayerIter
 
+
 class SimplePagedVote(PagedRadioMenu):
     def __init__(self, vote_callback=None, revote_on_tie=True, **kwargs):
         self._select_callback = kwargs["select_callback"] if "select_callback" in kwargs else None
@@ -68,6 +69,7 @@ class SimplePagedVote(PagedRadioMenu):
             queue._refresh()
 
         self.sent = True
+
 
 class SimpleRadioVote(SimpleRadioMenu):
     def __init__(self, title=None, vote_callback=None, revote_on_tie=True, **kwargs):
